@@ -1,9 +1,12 @@
+import os
+import sys
+
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Todo
-from .serializers import TodoSerializer, InventoryFile_Serializer
+from .serializers import TodoSerializer, InventoryFile_Serializer, FileSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -162,3 +165,38 @@ class TodosImportCSV(APIView):
             {"res": "Object added!"},
             status=status.HTTP_200_OK
         )
+
+
+class SendFileTo(APIView):
+    def post(self, request):
+        data = {
+            'file_name': request.data.get('file_name'),
+            'file_name_to_server': request.data.get('file_name_to_server'),
+            'url': request.data.get('url'),
+        }
+        serializer = FileSerializer(data=data)
+        if serializer.is_valid():
+            print(data)
+            url = data.get('url')
+            file_name = data.get('file_name')
+            file_name_to_server = data.get('file_name_to_server')
+            if not os.path.exists(file_name):
+                return Response({"res": "Not found file", "Wrong path": file_name}, status=status.HTTP_200_OK)
+            files = {'file': (file_name_to_server, open(file_name, 'rb'), 'text/csv')}
+            response = requests.post(url=url, files=files)
+            if response.status_code == 200:
+                return Response(
+                    {"res": f"File {file_name}->{file_name_to_server} added to server {url}"},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"res": (response.status_code, response.json())},
+                    status=status.HTTP_200_OK
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# {
+#     "file_name": "/home/oleg/Загрузки/Todos.csv",
+#     "file_name_to_server": "This field may not be null.",
+#     "url":  "http://qa-test.expsys.org:8080/upload-file"
+# }

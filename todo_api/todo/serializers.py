@@ -22,3 +22,9 @@ class InventoryFile_Serializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryFile
         fields = ('shop_inventory', 'todo')
+
+
+class FileSerializer(serializers.Serializer):
+    file_name = serializers.CharField()
+    file_name_to_server = serializers.CharField()
+    url = serializers.URLField()

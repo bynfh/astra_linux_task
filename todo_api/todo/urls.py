@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TodoListApiView, TodoDetailApiView, TodosExportAsCSV, InvertoryUpload, TodosImportCSV, SendFileTo
+from .views import TodoListApiView, TodoDetailApiView, TodosExportAsCSV, InvertoryUpload, TodosImportCSV, SendFileTo, History
 from . import views
 
 urlpatterns = [
@@ -9,5 +9,6 @@ urlpatterns = [
     path('download_file/', InvertoryUpload.as_view()),
     path('upload_file/', TodosImportCSV.as_view()),
     path('send_file/', SendFileTo.as_view()),
+    path('history/', History.as_view()),
 
 ]

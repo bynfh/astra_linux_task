@@ -3,10 +3,12 @@ from .models import Todo, InventoryFile
 
 
 class TodoSerializer(serializers.ModelSerializer):
+
+
     class Meta:
         model = Todo
-        fields = ["task", "completed", "timestamp", "updated", "id", "finish_date"]
-        read_only_fields = ('id',)
+        fields = ["task", "completed", "timestamp", "updated", "id", "finish_date", "user", ]
+        read_only_fields = ('id', 'history',)
 
     def validate_start_date(self, value):
         if self.instance and self.instance.start_date < value:

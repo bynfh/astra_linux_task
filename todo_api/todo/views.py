@@ -1,6 +1,5 @@
+import json
 import os
-import sys
-
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,6 +8,7 @@ from .models import Todo
 from .serializers import TodoSerializer, InventoryFile_Serializer, FileSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.core import serializers
 
 from .utils import export_to_csv, ImportToDbFromCsv
 
@@ -51,10 +51,10 @@ class TodoDetailApiView(APIView):
 
     def get_object(self, todo_id, user_id):
         """
-        Helper method to get the object with given todo_id, and user_id
+        Helper method to get the object with given todo_id
         """
         try:
-            return Todo.objects.get(id=todo_id, user=user_id)
+            return Todo.objects.get(id=todo_id)
         except Todo.DoesNotExist:
             return None
 
@@ -189,8 +189,10 @@ class SendFileTo(APIView):
                     status=status.HTTP_200_OK
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-# {
-#     "file_name": "/home/oleg/Загрузки/Todos.csv",
-#     "file_name_to_server": "This field may not be null.",
-#     "url":  "http://qa-test.expsys.org:8080/upload-file"
-# }
+
+
+class History(APIView):
+    def get(self, request):
+        todos = Todo.history.all()
+        resp = json.loads(serializers.serialize('json', todos))
+        return Response(resp, status=status.HTTP_200_OK)

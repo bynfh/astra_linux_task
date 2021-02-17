@@ -5,7 +5,7 @@ from .models import Todo, InventoryFile
 class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
-        fields = ["task", "completed", "timestamp", "updated", "user", "id", "finish_date"]
+        fields = ["task", "completed", "timestamp", "updated", "id", "finish_date"]
         read_only_fields = ('id',)
 
     def validate_start_date(self, value):

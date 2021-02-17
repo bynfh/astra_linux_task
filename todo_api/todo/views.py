@@ -22,7 +22,7 @@ class TodoListApiView(APIView):
         """
         List all the todo items for given requested user
         """
-        todos = Todo.objects.filter(user=request.user.id)
+        todos = Todo.objects.all()
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -154,13 +154,7 @@ class InvertoryUpload(APIView):
 
 class TodosImportCSV(APIView):
     def get(self, request):
-        # try:
-        ImportToDbFromCsv('/home/oleg/Загрузки/Todos.csv')
-        # except:
-        #     return Response(
-        #         {"res": "Object failed!"},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
+        ImportToDbFromCsv('/home/oleg/Загрузки/Todos.csv', Todo())
         return Response(
             {"res": "Object added!"},
             status=status.HTTP_200_OK

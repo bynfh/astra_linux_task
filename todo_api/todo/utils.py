@@ -40,7 +40,7 @@ def export_to_csv(queryset, fields, titles, file_name):
     return response
 
 
-def ImportToDbFromCsv(FilePath):
+def ImportToDbFromCsv(FilePath, Todo):
     FirstLine = True
     with open(FilePath, "r") as file:
         file_reader = csv.reader(file, delimiter=",")
@@ -48,10 +48,6 @@ def ImportToDbFromCsv(FilePath):
             if FirstLine:
                 FirstLine = False
                 continue
-            SaveToProduct(line[0], line[1], line[2], line[3], line[4], line[5])
-
-
-def SaveToProduct(task, timestamp, completed, updated, finish_date, user):
-    foo = Todo(task=task, timestamp=timestamp, completed=completed,
-               updated=updated, finish_date=finish_date)
-    foo.save()
+            Todo.task = line[0]
+            Todo.finish_date = line[4]
+            Todo.save()

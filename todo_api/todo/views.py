@@ -4,13 +4,7 @@ from rest_framework import status
 from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework import permissions
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Todo
-from .serializers import TodoSerializer
-from rest_framework import permissions
+from taggit.models import Tag
 
 
 class TodoListApiView(APIView):
@@ -34,6 +28,7 @@ class TodoListApiView(APIView):
         data = {
             'task': request.data.get('task'),
             'completed': request.data.get('completed'),
+            'finish_date': request.data.get('finish_date'),
             'user': request.user.id
         }
         serializer = TodoSerializer(data=data)
@@ -86,7 +81,8 @@ class TodoDetailApiView(APIView):
         data = {
             'task': request.data.get('task'),
             'completed': request.data.get('completed'),
-            'user': request.user.id
+            'finish_date': request.data.get('finish_date'),
+            'user': request.user.id,
         }
         serializer = TodoSerializer(instance=todo_instance, data=data, partial=True)
         if serializer.is_valid():

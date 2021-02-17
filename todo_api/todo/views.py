@@ -1,11 +1,13 @@
+import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Todo
-from .serializers import TodoSerializer
+from .serializers import TodoSerializer, InventoryFile_Serializer
 from rest_framework import permissions
+from rest_framework.parsers import MultiPartParser, FormParser
 
-from .utils import export_to_csv
+from .utils import export_to_csv, ImportToDbFromCsv
 
 
 class TodoListApiView(APIView):
@@ -119,6 +121,44 @@ def get_todo_data():
 
 class TodosExportAsCSV(APIView):
     def get(self, request):
-        users = get_todo_data()
-        data = export_to_csv(queryset=users[0], fields=users[1], titles=users[2], file_name=users[3])
+        todos = get_todo_data()
+        data = export_to_csv(queryset=todos[0],
+                             fields=todos[1],
+                             titles=todos[2],
+                             file_name=todos[3])
         return data
+
+
+class InvertoryUpload(APIView):
+    serializer_class = InventoryFile_Serializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        try:
+            serializer = InventoryFile_Serializer(data=request.data)
+            print(serializer.initial_data)
+
+            if serializer.is_valid():
+                print(serializer.data)
+                return Response("Done")
+            else:
+                print(serializer.errors)
+                return Response("Not Done")
+
+        except Exception as e:
+            return Response(str(e))
+
+
+class TodosImportCSV(APIView):
+    def get(self, request):
+        # try:
+        ImportToDbFromCsv('/home/oleg/Загрузки/Todos.csv')
+        # except:
+        #     return Response(
+        #         {"res": "Object failed!"},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+        return Response(
+            {"res": "Object added!"},
+            status=status.HTTP_200_OK
+        )

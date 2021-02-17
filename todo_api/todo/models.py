@@ -12,3 +12,8 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.task
+
+
+class InventoryFile(models.Model):
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE)
+    shop_inventory = models.FileField(upload_to='inventory/')

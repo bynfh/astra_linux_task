@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Todo
+from .models import Todo, InventoryFile
 
 
 class TodoSerializer(serializers.ModelSerializer):
@@ -15,3 +15,10 @@ class TodoSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class InventoryFile_Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = InventoryFile
+        fields = ('shop_inventory', 'todo')

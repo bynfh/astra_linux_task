@@ -1,6 +1,7 @@
 import csv
 
 from django.http import HttpResponse
+from .models import Todo
 
 
 def export_to_csv(queryset, fields, titles, file_name):
@@ -37,3 +38,20 @@ def export_to_csv(queryset, fields, titles, file_name):
     for item in queryset:
         writer.writerow([getattr(item, field) for field in headers])
     return response
+
+
+def ImportToDbFromCsv(FilePath):
+    FirstLine = True
+    with open(FilePath, "r") as file:
+        file_reader = csv.reader(file, delimiter=",")
+        for line in file_reader:
+            if FirstLine:
+                FirstLine = False
+                continue
+            SaveToProduct(line[0], line[1], line[2], line[3], line[4], line[5])
+
+
+def SaveToProduct(task, timestamp, completed, updated, finish_date, user):
+    foo = Todo(task=task, timestamp=timestamp, completed=completed,
+               updated=updated, finish_date=finish_date)
+    foo.save()

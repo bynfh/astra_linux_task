@@ -4,7 +4,8 @@ from rest_framework import status
 from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework import permissions
-from taggit.models import Tag
+
+from .utils import export_to_csv
 
 
 class TodoListApiView(APIView):
@@ -106,3 +107,18 @@ class TodoDetailApiView(APIView):
             {"res": "Object deleted!"},
             status=status.HTTP_200_OK
         )
+
+
+def get_todo_data():
+    queryset = Todo.objects.only('task', 'timestamp', 'completed', 'updated', 'finish_date', 'user')
+    fields = ['task', 'timestamp', 'completed', 'updated', 'finish_date', 'user']
+    titles = ['Task', 'Timestamp', 'Completed', 'Updated', 'Finish_date', 'User']
+    file_name = 'Todos'
+    return queryset, fields, titles, file_name
+
+
+class TodosExportAsCSV(APIView):
+    def get(self, request):
+        users = get_todo_data()
+        data = export_to_csv(queryset=users[0], fields=users[1], titles=users[2], file_name=users[3])
+        return data

@@ -9,6 +9,7 @@ class CategoryTodo(models.Model):
     def __str__(self):
         return self.category
 
+
 class Todo(models.Model):
     task = models.CharField(max_length=180)
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=False, blank=True)
@@ -21,8 +22,3 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.task
-
-
-class InventoryFile(models.Model):
-    todo = models.ForeignKey(Todo, on_delete=models.CASCADE)
-    shop_inventory = models.FileField(upload_to='inventory/')

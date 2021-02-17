@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Todo
-from .serializers import TodoSerializer, InventoryFile_Serializer, FileSerializer
+from .serializers import TodoSerializer, FileSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.core import serializers
@@ -130,26 +130,6 @@ class TodosExportAsCSV(APIView):
                              titles=todos[2],
                              file_name=todos[3])
         return data
-
-
-class InvertoryUpload(APIView):
-    serializer_class = InventoryFile_Serializer
-    parser_classes = [MultiPartParser, FormParser]
-
-    def post(self, request):
-        try:
-            serializer = InventoryFile_Serializer(data=request.data)
-            print(serializer.initial_data)
-
-            if serializer.is_valid():
-                print(serializer.data)
-                return Response("Done")
-            else:
-                print(serializer.errors)
-                return Response("Not Done")
-
-        except Exception as e:
-            return Response(str(e))
 
 
 class TodosImportCSV(APIView):

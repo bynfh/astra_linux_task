@@ -1,7 +1,6 @@
 import csv
 
 from django.http import HttpResponse
-from .models import Todo
 
 
 def export_to_csv(queryset, fields, titles, file_name):

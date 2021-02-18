@@ -3,22 +3,28 @@ from .models import Todo
 
 
 class TodoSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Todo.
+    Read only fields = id, history
+    """
 
     class Meta:
         model = Todo
         fields = ["task", "completed", "timestamp", "updated", "id", "finish_date", "user", "category"]
         read_only_fields = ('id', 'history',)
 
-    def validate_start_date(self, value):
-        if self.instance and self.instance.start_date < value:
-            raise serializers.ValidationError(
-                "After create poll you can't change start date"
-            )
-
-        return value
-
 
 class FileSerializer(serializers.Serializer):
+    """
+    Serializer for data about file to send to remote server
+    """
     file_name = serializers.CharField()
     file_name_to_server = serializers.CharField()
     url = serializers.URLField()
+
+
+class FileTodbSerializer(serializers.Serializer):
+    """
+    Serializer for data about file to send to remote server
+    """
+    file_name = serializers.CharField()

@@ -17,7 +17,7 @@ class CategoryTodo(models.Model):
 class Todo(models.Model):
     """
     Model Todo
-    link with CategoryTodo
+    link with CategoryTodo and User
     """
     task = models.CharField(max_length=180)
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=False, blank=True)

@@ -172,6 +172,9 @@ class TodoImportFromCSV(APIView):
         }
         serializer = FileTodbSerializer(data=data)
         if serializer.is_valid():
+            if not os.path.exists(data.get('file_name')):
+                return Response({"res": "Not found file", "Wrong path": data.get('file_name')},
+                                status=status.HTTP_200_OK)
             import_to_db_from_csv(data.get('file_name'), Todo())
             return Response(
                 {"res": f"File {data.get('file_name')} added"},

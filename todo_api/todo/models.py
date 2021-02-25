@@ -7,6 +7,7 @@ class CategoryTodo(models.Model):
     """
     Model category Todo.
     CharField. Can be empty. Max length == 180
+
     """
     category = models.CharField(blank=True, null=True, max_length=180)
 
@@ -18,6 +19,7 @@ class Todo(models.Model):
     """
     Model Todo
     link with CategoryTodo and User
+
     """
     task = models.CharField(max_length=180)
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=False, blank=True)

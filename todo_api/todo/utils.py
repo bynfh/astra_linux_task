@@ -24,14 +24,17 @@ def export_to_csv(file_name, response):
     return response
 
 
-def import_to_db_from_csv(FilePath):
-    with open(FilePath, "r") as file:
+def import_to_db_from_csv(file_path):
+    with open(file_path, "r") as file:
         file_reader = csv.DictReader(file, delimiter=",")
         for line_dict in file_reader:
-            Todo.task = line_dict.get('Task')
-            Todo.finish_date = line_dict.get('Finish_date')
-            Todo.timestamp = line_dict.get('Timestamp')
-            Todo.completed = line_dict.get('Completed')
-            Todo.updated = line_dict.get('Updated')
-            Todo.save()
+            todo = Todo()
+            todo.task = line_dict.get('task')
+            todo.finish_date = line_dict.get('finish_date')
+            todo.timestamp = line_dict.get('timestamp')
+            todo.completed = line_dict.get('completed')
+            todo.updated = line_dict.get('updated')
+            todo.save()
 
+
+#{"file_name":"/home/oleg/Загрузки/test.csv"}

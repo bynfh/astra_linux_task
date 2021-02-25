@@ -2,6 +2,7 @@ import json
 import os
 import requests
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -19,34 +20,25 @@ class TodoListApiView(APIView):
     Method get display everything todos
     Method post create todos
     :return Response with json and response status
+
     """
     # add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated]
 
     # List all
     def get(self, request, *args, **kwargs):
-        """
-        List all the todo items for given requested user
-        """
+        """List all the todo items for given requested user"""
         todos = Todo.objects.all()
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # Create
     def post(self, request, *args, **kwargs):
-        """
-        Create the Todo with given todo data
-        """
-        data = {
-            'task': request.data.get('task'),
-            'completed': request.data.get('completed'),
-            'finish_date': request.data.get('finish_date'),
-            'user': request.user.id
-        }
-        serializer = TodoSerializer(data=data)
+        """Create the Todo with given todo data"""
+        serializer = TodoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({"added": serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -57,52 +49,25 @@ class TodoDetailApiView(APIView):
     Method get display single todo
     Method put edit single todo
     :return Response with json and response status
+
     """
     # add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self, todo_id, user_id):
-        """
-        Helper method to get the object with given todo_id
-        """
-        try:
-            return Todo.objects.get(id=todo_id)
-        except Todo.DoesNotExist:
-            return None
-
     # Retrieve
     def get(self, request, todo_id, *args, **kwargs):
-        """
-        Retrieves the Todo with given todo_id
-        """
-        todo_instance = self.get_object(todo_id, request.user.id)
-        if not todo_instance:
-            return Response(
-                {"res": "Object with todo id does not exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        """Retrieves the Todo with given todo_id"""
+        queryset = Todo.objects.filter(id=todo_id)
+        todo_instance = get_object_or_404(queryset)
         serializer = TodoSerializer(todo_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # Update
     def put(self, request, todo_id, *args, **kwargs):
-        """
-        Updates the todo item with given todo_id if exists
-        """
-        todo_instance = self.get_object(todo_id, request.user.id)
-        if not todo_instance:
-            return Response(
-                {"res": "Object with todo id does not exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        data = {
-            'task': request.data.get('task'),
-            'completed': request.data.get('completed'),
-            'finish_date': request.data.get('finish_date'),
-            'user': request.user.id,
-        }
-        serializer = TodoSerializer(instance=todo_instance, data=data, partial=True)
+        """Updates the todo item with given todo_id if exists"""
+        queryset = Todo.objects.filter(id=todo_id)
+        todo_instance = get_object_or_404(queryset)
+        serializer = TodoSerializer(instance=todo_instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -110,20 +75,13 @@ class TodoDetailApiView(APIView):
 
     # Delete
     def delete(self, request, todo_id, *args, **kwargs):
-        """
-        Deletes the todo item with given todo_id if exists
-        """
-        todo_instance = self.get_object(todo_id, request.user.id)
-        if not todo_instance:
-            return Response(
-                {"res": "Object with todo id does not exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        """Deletes the todo item with given todo_id if exists"""
+        queryset = Todo.objects.filter(id=todo_id)
+        todo_instance = get_object_or_404(queryset)
         todo_instance.delete()
-        return Response(
-            {"res": "Object deleted!"},
-            status=status.HTTP_200_OK
-        )
+        return Response({"res": "Object deleted!"},
+                        status=status.HTTP_200_OK
+                        )
 
 
 class TodoExportCSV(APIView):
@@ -132,6 +90,7 @@ class TodoExportCSV(APIView):
     Request method == get
     Run utils export_to_csv and get HttpResponse
     :return HttpResponse from export_to_csv
+
     """
     # add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated]
@@ -157,17 +116,15 @@ class TodoImportFromCSV(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        data = {
-            'file_name': request.data.get('file_name'),
-        }
-        serializer = FileTodbSerializer(data=data)
+        """Send data from csv in local machine to model Todo"""
+        serializer = FileTodbSerializer(data=request.data)
         if serializer.is_valid():
-            if not os.path.exists(data.get('file_name')):
-                return Response({"res": "Not found file", "Wrong path": data.get('file_name')},
+            if not os.path.exists(request.data.get('file_name')):
+                return Response({"res": "Not found file", "Wrong path": request.data.get('file_name')},
                                 status=status.HTTP_200_OK)
-            import_to_db_from_csv(data.get('file_name'), Todo())
+            import_to_db_from_csv(request.data.get('file_name'))
             return Response(
-                {"res": f"File {data.get('file_name')} added"},
+                {"res": f"File {request.data.get('file_name')} added"},
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -179,31 +136,28 @@ class SendFileToRemoteServer(APIView):
     Url, file_name, file_name_to_server
     for remote server get from request data
     :return Response with status and info about processing
+
     """
     # add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        data = {
-            'file_name': request.data.get('file_name'),
-            'file_name_to_server': request.data.get('file_name_to_server'),
-            'url': request.data.get('url'),
-        }
-        serializer = FileSerializer(data=data)
+        serializer = FileSerializer(data=request.data)
         if serializer.is_valid():
-            # Get data from request
-            url = data.get('url')
-            file_name = data.get('file_name')
-            file_name_to_server = data.get('file_name_to_server')
             # Check that file exists
-            if not os.path.exists(file_name):
-                return Response({"res": "Not found file", "Wrong path": file_name}, status=status.HTTP_200_OK)
-            files = {'file': (file_name_to_server, open(file_name, 'rb'), 'text/csv')}
+            if not os.path.exists(request.data.get('file_name')):
+                return Response({"res": "Not found file",
+                                 "Wrong path": request.data.get('file_name')},
+                                status=status.HTTP_200_OK)
+            files = {'file': (request.data.get('file_name_to_server'),
+                              open(request.data.get('file_name'), 'rb'), 'text/csv')}
             # Send request to remote server
-            response = requests.post(url=url, files=files)
+            response = requests.post(url=request.data.get('url'), files=files)
             if response.status_code == 200:
                 return Response(
-                    {"res": f"File {file_name}->{file_name_to_server} added to server {url}"},
+                    {"res": f"File {request.data.get('file_name')}->"
+                            f"{request.data.get('file_name_to_server')}"
+                            f" added to server {request.data.get('url')}"},
                     status=status.HTTP_200_OK
                 )
             else:

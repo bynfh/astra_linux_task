@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'todo',
     'rest_framework',
     'simple_history',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

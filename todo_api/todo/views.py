@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -135,26 +136,15 @@ class TodoExportCSV(APIView):
     # add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated]
 
-    @staticmethod
-    def get_todo_data():
-        """Get data for export_to_csv"""
-        queryset = Todo.objects.only('task', 'timestamp', 'completed', 'updated', 'finish_date', 'user')
-        fields = ['task', 'timestamp', 'completed', 'updated', 'finish_date', 'user']
-        titles = ['Task', 'Timestamp', 'Completed', 'Updated', 'Finish_date', 'User']
-        file_name = 'Todos'
-        return queryset, fields, titles, file_name
-
-    def get(self, request):
+    def get(self, request, file_name):
         """
         Run util export_to_csv
-        :return HttpResponse from function export_to_csv
+        :return HttpResponse
+
         """
-        todos = self.get_todo_data()
-        data = export_to_csv(queryset=todos[0],
-                             fields=todos[1],
-                             titles=todos[2],
-                             file_name=todos[3])
-        return data
+        response = HttpResponse(content_type='text/csv')
+        response = export_to_csv(file_name, response)
+        return response
 
 
 class TodoImportFromCSV(APIView):
@@ -172,6 +162,9 @@ class TodoImportFromCSV(APIView):
         }
         serializer = FileTodbSerializer(data=data)
         if serializer.is_valid():
+            if not os.path.exists(data.get('file_name')):
+                return Response({"res": "Not found file", "Wrong path": data.get('file_name')},
+                                status=status.HTTP_200_OK)
             import_to_db_from_csv(data.get('file_name'), Todo())
             return Response(
                 {"res": f"File {data.get('file_name')} added"},

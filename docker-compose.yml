@@ -1,0 +1,7 @@
+services:
+
+  api_todo:
+    build: .
+    ports:
+      - "8000:8000"
+    command: python /app/todo_api/manage.py runserver 0.0.0.0:8000
